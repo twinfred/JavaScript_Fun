@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Visual mapping</title>
+</head>
+<body>
+    <div id="map"></div>
+    <button id="switch" onclick="toggleAuto()">Turn On Auto</button>
+    <button id="addNewPoint" onclick="addNewPoint(true)">Add New Point</button>
+    <button id="movePoints" onclick="setMapPoints()">Move Map Points</button>
+    <script>
+        var mapSpecs = {
+            width: Math.floor(Math.random()*199) + 301,
+            height: Math.floor(Math.random()*199) + 301,
+            color: '#'+Math.floor(Math.random()*16777215).toString(16)
+        };
+
+        var mapPointSpecs = [];
+
+        // Create background
+        var map = document.querySelector('#map');
+        map.style.width = mapSpecs.width.toString() + 'px';
+        map.style.height = mapSpecs.height.toString() + 'px';
+        map.style.backgroundColor = mapSpecs.color;
+        map.style.position = 'relative';
+        map.style.border = '2px dashed #ffffff';
+
+        // Create map points
+        function setMapPoints() {
+            map.innerHTML = '';
+            mapPointSpecs.forEach(function(point) {
+                topChange = Math.floor(Math.random()*99) + 1;
+                topChange *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
+                point.top += topChange;
+
+                leftChange = Math.floor(Math.random()*99) + 1;
+                leftChange *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
+                point.left += leftChange;
+
+                // Contain in map
+                if(point.top < 0) { point.top = 0 }
+                if(point.top + point.size > mapSpecs.height) { point.top = mapSpecs.height - point.size }
+
+                if(point.left + point.size > mapSpecs.width) { point.left = mapSpecs.width - point.size }
+                if(point.left < 0) { point.left = 0 }
+
+                // Create DIV element
+                var pointDiv = document.createElement('div');
+                pointDiv.setAttribute('class', 'point');
+                map.insertAdjacentElement('beforeend', pointDiv);
+                pointDiv.style.top = point.top.toString() + 'px';
+                pointDiv.style.left = point.left.toString() + 'px';
+                pointDiv.style.width = point.size.toString() + 'px';
+                pointDiv.style.height = point.size.toString() + 'px';
+                pointDiv.style.backgroundColor = point.color;
+                pointDiv.style.borderRadius = point.size.toString() + 'px';
+                pointDiv.style.position = 'absolute';
+
+                pointDiv.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    point.size += 20;
+                    addNewPoint(true);
+                    setMapPoints();
+                });
+            });
+        }
+
+        function addNewPoint(setPoints) {
+            var newPoint = {
+                top: Math.floor(Math.random()*299) + 1,
+                left: Math.floor(Math.random()*299) + 1,
+                size: Math.floor(Math.random()*99) + 1,
+                color: '#'+Math.floor(Math.random()*16777215).toString(16)
+            }
+            mapPointSpecs.push(newPoint);
+            if(setPoints) {
+                setMapPoints();
+            }
+        }
+
+        var addPoint;
+        var auto = false;
+
+        function toggleAuto() {
+            if(!auto) {
+                addPoint = setInterval(function(){
+                    addNewPoint(false);
+                }, 2000);
+                movePoints = setInterval(function(){
+                    setMapPoints();
+                }, 500);
+                document.querySelector('#switch').innerText = "Turn Off Auto";
+                auto = true;
+            }else{
+                clearInterval(addPoint);
+                clearInterval(movePoints);
+                document.querySelector('#switch').innerText = "Turn On Auto";
+                auto = false;
+            }
+        }
+    </script>
+</body>
+</html>
